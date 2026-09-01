@@ -12,9 +12,7 @@
     { id: 'tablet-vision-11', nome: 'Tablet Vision 11', categoria: 'Tablets', preco: 2499.0, img: 'imagens/produtos/tablet.png', destaque: false },
     { id: 'mouse-game-turbo', nome: 'Mouse Gamer Turbo', categoria: 'Periféricos', preco: 349.9, img: 'imagens/produtos/mouse.png', destaque: false },
     { id: 'caixa-mini', nome: 'Caixa de Som Mini', categoria: 'Áudio', preco: 459.9, img: 'imagens/produtos/caixasom.png', destaque: false },
-  ];
-
-  window.INTELITECH = Object.freeze({ PRODUCTS });
+];
 
   const formatBRL = (value) =>
     value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -37,7 +35,7 @@
       </a>
     </article>`;
 
-  window.INTELITECH.cardTemplate = cardTemplate;
+  window.INTELITECH = Object.freeze({ PRODUCTS, cardTemplate });
 
   const applyTheme = (theme) => {
     document.documentElement.setAttribute('data-theme', theme);
