@@ -54,9 +54,58 @@
   </header>
 
   <main id="conteudo">
-    <section class="hero-placeholder">
+    <section class="shop-hero" aria-labelledby="shop-titulo">
       <div class="container">
-        <h1>Conteúdo da página de Produtos em breve</h1>
+        <span class="eyebrow">Nossa vitrine</span>
+        <h1 id="shop-titulo">Produtos <span class="text-gold">InteliTech</span></h1>
+        <p>Filtre por categoria, preço e ordenação para encontrar exatamente o que você procura.</p>
+      </div>
+    </section>
+
+    <section class="shop" aria-label="Lista de produtos com filtros">
+      <div class="container shop-layout">
+        <aside class="shop-filters" id="shopFilters" aria-label="Filtros de produtos">
+          <div class="filters-head">
+            <h2>Filtros</h2>
+            <button type="button" class="filters-clear" id="clearFilters">Limpar tudo</button>
+          </div>
+
+          <fieldset class="filter-group">
+            <legend>Ordenação</legend>
+            <div class="filter-select">
+              <select id="sortSelect" aria-label="Ordenar produtos">
+                <option value="relevancia">Mais relevantes</option>
+                <option value="preco-asc">Menor preço</option>
+                <option value="preco-desc">Maior preço</option>
+                <option value="nome-asc">Nome (A–Z)</option>
+              </select>
+            </div>
+          </fieldset>
+
+          <fieldset class="filter-group">
+            <legend>Categoria</legend>
+            <div class="filter-checks" id="categoryFilters"></div>
+          </fieldset>
+
+          <fieldset class="filter-group">
+            <legend>Faixa de preço</legend>
+            <div class="filter-checks" id="priceFilters"></div>
+          </fieldset>
+        </aside>
+
+        <div class="shop-main">
+          <div class="shop-toolbar">
+            <span class="shop-count" id="resultCount" aria-live="polite"></span>
+            <div class="shop-toolbar-actions">
+              <button type="button" class="btn btn-outline btn-sm filters-toggle" id="filtersToggle" aria-expanded="false">
+                Filtros
+              </button>
+              <button type="button" class="filters-close-mobile" id="filtersCloseMobile" aria-label="Fechar filtros">×</button>
+            </div>
+          </div>
+          <ul class="product-grid" id="productGrid"></ul>
+          <p class="product-empty" id="productEmpty" hidden>Nenhum produto encontrado com os filtros selecionados.</p>
+        </div>
       </div>
     </section>
   </main>
@@ -92,5 +141,149 @@
   </footer>
 
   <script src="../index.js"></script>
+  <script>
+    (() => {
+      'use strict';
+
+      const all = window.INTELITECH.PRODUCTS;
+      const template = window.INTELITECH.cardTemplate;
+      const prefix = '../../';
+
+      const state = {
+        categoria: new Set(),
+        preco: new Set(),
+        sort: 'relevancia',
+      };
+
+      const PRICE_RANGES = [
+        { key: 'ate-500', label: 'Até R$ 500', min: 0, max: 500 },
+        { key: '500-1000', label: 'R$ 500 – R$ 1.000', min: 500, max: 1000 },
+        { key: '1000-2500', label: 'R$ 1.000 – R$ 2.500', min: 1000, max: 2500 },
+        { key: 'acima-2500', label: 'Acima de R$ 2.500', min: 2500, max: Infinity },
+      ];
+
+      const CATEGORIES = [...new Set(all.map((p) => p.categoria))].sort();
+
+      const grid = document.getElementById('productGrid');
+      const countEl = document.getElementById('resultCount');
+      const emptyEl = document.getElementById('productEmpty');
+      const sortSelect = document.getElementById('sortSelect');
+      const clearBtn = document.getElementById('clearFilters');
+      const filtersToggle = document.getElementById('filtersToggle');
+      const filtersCloseMobile = document.getElementById('filtersCloseMobile');
+      const filters = document.getElementById('shopFilters');
+
+      const buildChecklist = (containerId, items, group) => {
+        const box = document.getElementById(containerId);
+        box.innerHTML = items
+          .map(
+            (item) => `
+              <label class="filter-check">
+                <input type="checkbox" value="${item.key}" data-group="${group}" />
+                <span class="check-box" aria-hidden="true"></span>
+                <span class="check-label">${item.label}</span>
+              </label>`
+          )
+          .join('');
+
+        box.querySelectorAll('input').forEach((input) => {
+          input.addEventListener('change', () => {
+            const set = group === 'categoria' ? state.categoria : state.preco;
+            const val = input.value;
+            if (input.checked) set.add(val);
+            else set.delete(val);
+            render();
+          });
+        });
+      };
+
+      buildChecklist(
+        'categoryFilters',
+        CATEGORIES.map((c) => ({ key: c, label: c })),
+        'categoria'
+      );
+      buildChecklist('priceFilters', PRICE_RANGES, 'preco');
+
+      const inPriceRange = (price, key) => {
+        const range = PRICE_RANGES.find((r) => r.key === key);
+        return price >= range.min && (range.max === Infinity || price < range.max);
+      };
+
+      const filtered = () => {
+        let list = [...all];
+
+        if (state.categoria.size) {
+          list = list.filter((p) => state.categoria.has(p.categoria));
+        }
+
+        if (state.preco.size) {
+          list = list.filter((p) => [...state.preco].some((key) => inPriceRange(p.preco, key)));
+        }
+
+        switch (state.sort) {
+          case 'preco-asc':
+            list.sort((a, b) => a.preco - b.preco);
+            break;
+          case 'preco-desc':
+            list.sort((a, b) => b.preco - a.preco);
+            break;
+          case 'nome-asc':
+            list.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+            break;
+          default:
+            list.sort((a, b) => Number(b.destaque) - Number(a.destaque));
+        }
+
+        return list;
+      };
+
+      const render = () => {
+        const list = filtered();
+
+        grid.innerHTML = list.map((p) => template(p, { highlight: p.destaque, prefix })).join('');
+
+        countEl.textContent = list.length === 1 ? '1 produto encontrado' : `${list.length} produtos encontrados`;
+        emptyEl.hidden = list.length > 0;
+        grid.hidden = list.length === 0;
+
+        const activeCount = state.categoria.size + state.preco.size;
+        clearBtn.disabled = activeCount === 0 && state.sort === 'relevancia';
+      };
+
+      sortSelect.addEventListener('change', () => {
+        state.sort = sortSelect.value;
+        render();
+      });
+
+      clearBtn.addEventListener('click', () => {
+        state.categoria.clear();
+        state.preco.clear();
+        state.sort = 'relevancia';
+        sortSelect.value = 'relevancia';
+        document.querySelectorAll('.filter-check input').forEach((input) => (input.checked = false));
+        render();
+      });
+
+      const openFilters = () => {
+        filters.classList.add('open');
+        filtersToggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      };
+
+      const closeFilters = () => {
+        filters.classList.remove('open');
+        filtersToggle.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      };
+
+      filtersToggle.addEventListener('click', () => {
+        if (filters.classList.contains('open')) closeFilters();
+        else openFilters();
+      });
+      filtersCloseMobile.addEventListener('click', closeFilters);
+
+      render();
+    })();
+  </script>
 </body>
 </html>

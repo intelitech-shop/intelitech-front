@@ -1,14 +1,285 @@
-/* Estilos específicos da página "Produtos" */
-.page-hero {
-  min-height: 40vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding-top: var(--header-h);
+/* ---------- hero da página de produtos ---------- */
+.shop-hero {
+  padding-top: calc(var(--header-h) + 72px);
+  padding-bottom: 28px;
+  background:
+    radial-gradient(760px 320px at 12% 0%, rgba(212, 175, 55, 0.14), transparent 62%),
+    var(--bg-soft);
 }
 
-.page-hero h1 {
-  font-size: clamp(2rem, 4.5vw, 3.2rem);
+.shop-hero h1 {
+  font-size: clamp(2rem, 4.6vw, 3.2rem);
   font-weight: 800;
+}
+
+.shop-hero p {
+  margin-top: 12px;
+  max-width: 54ch;
+  color: var(--text-soft);
+}
+
+/* ---------- layout da vitrine ---------- */
+.shop {
+  padding-block: 40px 30px;
+}
+
+.shop-layout {
+  display: grid;
+  grid-template-columns: 258px 1fr;
+  gap: clamp(24px, 3vw, 42px);
+  align-items: start;
+}
+
+/* ---------- barra lateral de filtros ---------- */
+.shop-filters {
+  position: sticky;
+  top: calc(var(--header-h) + 18px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.filters-head h2 {
+  font-size: 1.05rem;
+}
+
+.filters-clear {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  transition: color var(--transition);
+}
+
+.filters-clear:hover:not(:disabled) {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+.filters-clear:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.filter-group {
+  border: none;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  margin-top: 18px;
+  width: 100%;
+}
+
+.filter-group legend {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.filter-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  color: var(--text-soft);
+  transition: color var(--transition);
+}
+
+.filter-check:hover {
+  color: var(--accent);
+}
+
+.filter-check input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.check-box {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  transition: border-color var(--transition), background-color var(--transition), transform var(--transition);
+}
+
+.filter-check input:checked + .check-box {
+  background: var(--grad-accent);
+  border-color: transparent;
+  transform: scale(1.05);
+}
+
+.filter-check input:checked + .check-box::after {
+  content: '✓';
+  color: #201a08;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.filter-check input:focus-visible + .check-box {
+  box-shadow: var(--glow);
+}
+
+.filter-select select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.filter-select select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--glow);
+}
+
+/* ---------- área principal da grid ---------- */
+.shop-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.shop-count {
+  font-weight: 600;
+  color: var(--text-soft);
+  font-size: 0.95rem;
+}
+
+.shop-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-sm {
+  padding: 10px 18px;
+  font-size: 0.85rem;
+}
+
+.filters-toggle {
+  display: none;
+}
+
+.filters-close-mobile {
+  display: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 1.4rem;
+  line-height: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.product-grid .product-card-inner {
+  animation: card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 56px 20px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+}
+
+/* ---------- filtros como gaveta no mobile ---------- */
+@media (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .shop-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-filters {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: min(320px, 86vw);
+    z-index: 120;
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    border: none;
+    border-left: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform var(--transition);
+    padding: 24px;
+  }
+
+  .shop-filters.open {
+    transform: translateX(0);
+  }
+
+  .filters-close-mobile {
+    display: inline-flex;
+  }
+
+  .filters-toggle {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 560px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
 }
