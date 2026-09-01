@@ -53,9 +53,67 @@
   </header>
 
   <main id="conteudo">
-    <section class="hero-placeholder">
+    <section class="hero" aria-labelledby="hero-titulo">
+      <div class="hero-bg" aria-hidden="true">
+        <span class="orb orb-1"></span>
+        <span class="orb orb-2"></span>
+      </div>
+      <div class="container hero-inner">
+        <div class="hero-copy reveal">
+          <span class="eyebrow">Tecnologia inteligente</span>
+          <h1 id="hero-titulo">O futuro chega <span class="text-gold">mais rápido</span> na sua porta.</h1>
+          <p>
+            A InteliTech.shop reúne os melhores dispositivos de tecnologia com curadoria especializada,
+            preço justo e atendimento de verdade — do smartphone à sua mesa de trabalho.
+          </p>
+          <div class="hero-actions">
+            <a href="pages/sobreNos/sobreNos.html" class="btn btn-lg arrow">Conheça a InteliTech</a>
+            <a href="pages/produtos/produtos.html" class="btn btn-lg btn-outline">Ver produtos</a>
+          </div>
+          <ul class="hero-stats">
+            <li><strong>+10 mil</strong><span>clientes atendidos</span></li>
+            <li><strong>+120</strong><span>produtos em linha</span></li>
+            <li><strong>4,9 ★</strong><span>avaliação média</span></li>
+          </ul>
+        </div>
+        <div class="hero-visual reveal" style="--reveal-delay: 0.15s">
+          <div class="float-card float-main">
+            <img src="imagens/produtos/fone.png" alt="Fone Bluetooth MaxSound" />
+          </div>
+          <div class="float-card float-sub">
+            <img src="imagens/produtos/smartwatch.png" alt="Smartwatch Fit Pro" />
+          </div>
+          <div class="float-badge">
+            <span class="badge-ico" aria-hidden="true">✓</span>
+            <div>
+              <p>Garantia + Envio</p>
+              <small>para todo o Brasil</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="carousel-section" id="destaques" aria-labelledby="destaques-titulo">
       <div class="container">
-        <h1>Conteúdo da Home em breve</h1>
+        <div class="section-head center reveal">
+          <span class="eyebrow">Os queridinhos</span>
+          <h2 id="destaques-titulo">Produtos em destaque</h2>
+          <p>Uma seleção especial dos itens mais desejados da semana. Deslize para conhecer todos.</p>
+        </div>
+
+        <div class="carousel reveal" style="--reveal-delay: 0.1s">
+          <button type="button" class="carousel-btn prev" data-carousel="prev" aria-label="Mostrar produtos anteriores">‹</button>
+          <div class="carousel-track-wrap" id="carouselTrackWrap">
+            <ul class="carousel-track" id="carouselTrack" aria-live="polite"></ul>
+          </div>
+          <button type="button" class="carousel-btn next" data-carousel="next" aria-label="Mostrar próximos produtos">›</button>
+        </div>
+        <div class="carousel-dots" id="carouselDots" role="tablist" aria-label="Índice do carrossel"></div>
+
+        <div class="carousel-cta reveal">
+          <a href="pages/produtos/produtos.html" class="btn btn-lg arrow">Explorar todos os produtos</a>
+        </div>
       </div>
     </section>
   </main>
