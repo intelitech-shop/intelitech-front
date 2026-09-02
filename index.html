@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="InteliTech.shop — Tecnologia inteligente com preço de verdade. Smartphones, notebooks, fones e muito mais." />
+  <title>InteliTech.shop | Tecnologia inteligente</title>
+  <link rel="icon" type="image/png" href="imagens/logo.png" />
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('intelitech-theme');
+        if (t !== 'dark' && t !== 'light') {
+          t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <header class="navbar" id="navbar">
+    <nav class="nav-container" aria-label="Navegação principal">
+      <a href="index.html" class="brand" aria-label="Ir para a página inicial">
+        <img src="imagens/logo.png" alt="Logo InteliTech.shop" class="brand-logo" width="42" height="42" />
+        <span class="brand-name">InteliTech<span class="brand-dot">.shop</span></span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" class="nav-link active" aria-current="page">Início</a></li>
+        <li><a href="pages/sobreNos/sobreNos.html" class="nav-link">Sobre Nós</a></li>
+        <li><a href="pages/produtos/produtos.html" class="nav-link">Produtos</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" aria-label="Alternar tema claro/escuro" title="Alternar tema">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.5" />
+            <path d="M12 2v2.5M12 19.5V22M4.5 12H2M22 12h-2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8" />
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.5A8.5 8.5 0 1 1 11.5 3a6.5 6.5 0 0 0 9.5 9.5z" />
+          </svg>
+        </button>
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="Abrir menu de navegação" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="conteudo">
+    <section class="hero" aria-labelledby="hero-titulo">
+      <div class="hero-bg" aria-hidden="true">
+        <span class="orb orb-1"></span>
+        <span class="orb orb-2"></span>
+      </div>
+      <div class="container hero-inner">
+        <div class="hero-copy reveal">
+          <span class="eyebrow">Tecnologia inteligente</span>
+          <h1 id="hero-titulo">O futuro chega <span class="text-gold">mais rápido</span> na sua porta.</h1>
+          <p>
+            A InteliTech.shop reúne os melhores dispositivos de tecnologia com curadoria especializada,
+            preço justo e atendimento de verdade — do smartphone à sua mesa de trabalho.
+          </p>
+          <div class="hero-actions">
+            <a href="pages/sobreNos/sobreNos.html" class="btn btn-lg arrow">Conheça a InteliTech</a>
+            <a href="pages/produtos/produtos.html" class="btn btn-lg btn-outline">Ver produtos</a>
+          </div>
+          <ul class="hero-stats">
+            <li><strong>+10 mil</strong><span>clientes atendidos</span></li>
+            <li><strong>+120</strong><span>produtos em linha</span></li>
+            <li><strong>4,9 ★</strong><span>avaliação média</span></li>
+          </ul>
+        </div>
+        <div class="hero-visual reveal" style="--reveal-delay: 0.15s">
+          <div class="float-card float-main">
+            <img src="imagens/produtos/fone.png" alt="Fone Bluetooth MaxSound" />
+          </div>
+          <div class="float-card float-sub">
+            <img src="imagens/produtos/smartwatch.png" alt="Smartwatch Fit Pro" />
+          </div>
+          <div class="float-badge">
+            <span class="badge-ico" aria-hidden="true">✓</span>
+            <div>
+              <p>Garantia + Envio</p>
+              <small>para todo o Brasil</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="carousel-section" id="destaques" aria-labelledby="destaques-titulo">
+      <div class="container">
+        <div class="section-head center reveal">
+          <span class="eyebrow">Os queridinhos</span>
+          <h2 id="destaques-titulo">Produtos em destaque</h2>
+          <p>Uma seleção especial dos itens mais desejados da semana. Deslize para conhecer todos.</p>
+        </div>
+
+        <div class="carousel reveal" style="--reveal-delay: 0.1s">
+          <button type="button" class="carousel-btn prev" data-carousel="prev" aria-label="Mostrar produtos anteriores">‹</button>
+          <div class="carousel-track-wrap" id="carouselTrackWrap">
+            <ul class="carousel-track" id="carouselTrack" aria-live="polite"></ul>
+          </div>
+          <button type="button" class="carousel-btn next" data-carousel="next" aria-label="Mostrar próximos produtos">›</button>
+        </div>
+        <div class="carousel-dots" id="carouselDots" role="tablist" aria-label="Índice do carrossel"></div>
+
+        <div class="carousel-cta reveal">
+          <a href="pages/produtos/produtos.html" class="btn btn-lg arrow">Explorar todos os produtos</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col footer-brand">
+          <a href="index.html" class="brand">
+            <img src="imagens/logo.png" alt="Logo InteliTech.shop" class="brand-logo" width="42" height="42" />
+            <span class="brand-name">InteliTech<span class="brand-dot">.shop</span></span>
+          </a>
+          <p>Tecnologia inteligente com preço de verdade. Curadoria de produtos de ponta para quem vive conectado.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navegação</h4>
+          <a href="index.html">Início</a>
+          <a href="pages/sobreNos/sobreNos.html">Sobre Nós</a>
+          <a href="pages/produtos/produtos.html">Produtos</a>
+        </div>
+        <div class="footer-col">
+          <h4>Ajuda</h4>
+          <a href="#">Central de Ajuda</a>
+          <a href="#">Política de Troca</a>
+          <a href="#">Privacidade</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span class="footer-year">2026</span> <strong>InteliTech.shop</strong> — Todos os direitos reservados.</span>
+        <span>Feito com <strong>✦</strong> para a Oficina de Git.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="index.js"></script>
+</body>
+</html>
