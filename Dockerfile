@@ -1,16 +1,7 @@
-FROM node:22-alpine AS build
+FROM nginx:alpine
 
-WORKDIR /app
-
-COPY . .
-
-RUN npm ci
-RUN npm run build
-
-# Imagem base - Ngxin apline
-FROM nginx:alpine AS production
-
-COPY --from=build /app/dist/lista-de-tarefa/browser /usr/share/nginx/html
+# Copy static files directly into nginx's HTML directory
+COPY . /usr/share/nginx/html
 
 EXPOSE 80
 
