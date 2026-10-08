@@ -26,6 +26,7 @@ jobs:
         with:
           name: oraclelinux
           compartment: ${{ secrets.OCI_COMPARTMENT_OCID }}
+          region: ${{ secrets.OCI_REGION_KEY }}
 
       # Log in to OCIR
       - name: 'Log in to OCIR'
