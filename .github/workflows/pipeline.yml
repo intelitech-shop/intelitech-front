@@ -43,7 +43,13 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key opc@$VM_PUBLIC_IP <<'EOF'
-            # Comandos a serem rodados dentro da VM
+            # Ensure Docker is installed and running
+            if ! command -v docker >/dev/null 2>&1; then
+              sudo dnf install -y docker
+              sudo systemctl enable --now docker
+              sudo usermod -aG docker $(whoami)
+              newgrp docker
+            fi
             docker pull ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }}
             docker stop intelitech-front || true
             docker rm intelitech-front || true
