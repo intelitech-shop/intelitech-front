@@ -19,17 +19,18 @@ jobs:
       OCI_CLI_TENANCY: ${{ secrets.OCI_NAMESPACE }}
       OCI_CLI_REGION: ${{ secrets.OCI_REGION_KEY }}
       OCI_CLI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT}}
+      OCI_AUTH_TOKEN: ${{secrets.OCI_AUTH_TOKEN}}
+      OCI_NAMESPACE: ${{ secrets.OCI_NAMESPACE }}
 
     steps:
       # Checkout source code
       - name: 'Checkout'
         uses: actions/checkout@v6
         
-      # Log in to OCIR
       - name: Log into OCIR
-        uses: oracle-actions/login-ocir@v1.3.0
-        with:
-          auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
+        run: |
+          echo "${OCI_AUTH_TOKEN}" | docker login ${OCI_CLI_REGION}.ocir.io -u "${OCI_CLI_TENANCY}/${OCI_CLI_USER}" --password-stdin
+
 
       # Cache Docker layers to speed up builds
       - name: Cache Docker layers
@@ -46,7 +47,7 @@ jobs:
           docker build \
             --cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
-            -t ${{ secrets.OCI_REGION_KEY }}.ocir.io/${{ secrets.OCI_NAMESPACE }}/intelitech-front:${{ github.sha }} .
+            -t ${OCI_REGION}.ocir.io/${OCI_NAMESPACE}/intelitech-front:${{ github.sha }} .
 
   push-image:
     needs: test-and-build
@@ -60,6 +61,8 @@ jobs:
       OCI_CLI_TENANCY: ${{ secrets.OCI_NAMESPACE }}
       OCI_CLI_REGION: ${{ secrets.OCI_REGION_KEY }}
       OCI_CLI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT}}
+      OCI_AUTH_TOKEN: ${{secrets.OCI_AUTH_TOKEN}}
+      OCI_NAMESPACE: ${{ secrets.OCI_NAMESPACE }}
 
 
     steps:
@@ -68,9 +71,8 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Log into OCIR
-        uses: oracle-actions/login-ocir@v1.3.0
-        with:
-          auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
+        run: |
+          echo "${OCI_AUTH_TOKEN}" | docker login ${OCI_CLI_REGION}.ocir.io -u "${OCI_CLI_TENANCY}/${OCI_CLI_USER}" --password-stdin
 
       # Push the image built in previous job
       - name: Push Docker image
