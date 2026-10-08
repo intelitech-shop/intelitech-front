@@ -1,36 +1,87 @@
 name: Pipeline
+
 on:
-    workflow_dispatch:
-    push:
-        - dev
-        - main
+  workflow_dispatch:
+  push:
+    - dev
+    - main
 
 jobs:
-    Build-Test:
-        runs-on: ubuntu-latest
-        environment: ${{github.ref_name == 'dev' && 'development' || 'production'}}
-        defaults:
-            run:
-                shell: bash
-        
-        steps:
-            - name: 'Checkout'
-              uses: actions/checkout@v6
-            
-            - name: Get or create an OCIR Repository
-              uses: oracle-actions/get-ocir-repository@v1.3.0
-              id: get-ocir-repository
-              with:
-                name: oraclelinux
-                compartment: ${{ secrets.OCI_COMPARTMENT_OCID }}
+  test-and-build:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'dev' && 'development' || 'production' }}
+    defaults:
+      run:
+        shell: bash
 
-            - name: 'Log in to OCIR'
-              uses: oracle-actions/login-ocir@v1.3.0
-              id: login-ocir
-              with:
-                auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
+    steps:
+      # Checkout source code
+      - name: 'Checkout'
+        uses: actions/checkout@v6
 
-            - name: 'Build and Push Docker Image'
-              run: |
-                docker build -t ${{ secrets.OCI_REGION_KEY }}.ocir.io/${{ secrets.OCI_NAMESPACE }}/intelitech-front:${{ github.sha }} .
-                docker push ${{ secrets.OCI_REGION_KEY }}.ocir.io/${{ secrets.OCI_NAMESPACE }}/intelitech-front:${{ github.sha }}
+      # Install dependencies (adjust to your stack)
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      # Run tests (placeholder – replace with your test command)
+      - name: Run tests
+        run: |
+          npm test
+
+      # Get or create OCIR repository
+      - name: Get or create an OCIR Repository
+        uses: oracle-actions/get-ocir-repository@v1.3.0
+        id: get-ocir-repository
+        with:
+          name: oraclelinux
+          compartment: ${{ secrets.OCI_COMPARTMENT_OCID }}
+
+      # Log in to OCIR
+      - name: 'Log in to OCIR'
+        uses: oracle-actions/login-ocir@v1.3.0
+        id: login-ocir
+        with:
+          auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
+
+      # Cache Docker layers to speed up builds
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # Build Docker image (uses cache)
+      - name: Build Docker image
+        run: |
+          docker build \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
+            -t ${{ secrets.OCI_REGION_KEY }}.ocir.io/${{ secrets.OCI_NAMESPACE }}/intelitech-front:${{ github.sha }} .
+
+  push-image:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'dev' && 'development' || 'production' }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # Checkout again (required for separate job context)
+      - name: 'Checkout'
+        uses: actions/checkout@v6
+
+      # Log in to OCIR (required to push)
+      - name: 'Log in to OCIR'
+        uses: oracle-actions/login-ocir@v1.3.0
+        id: login-ocir
+        with:
+          auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
+
+      # Push the image built in previous job
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.OCI_REGION_KEY }}.ocir.io/${{ secrets.OCI_NAMESPACE }}/intelitech-front:${{ github.sha }}
