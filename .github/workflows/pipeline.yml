@@ -20,7 +20,7 @@ jobs:
       OCI_CLI_REGION: ${{ secrets.OCI_REGION_KEY }}
       OCI_CLI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT}}
       OCI_AUTH_TOKEN: ${{secrets.OCI_AUTH_TOKEN}}
-      OCI_NAMESPACE: ${{ secrets.OCI_NAMESPACE }}
+      OCI_NAMESPACE_NAME: ${{ secrets.OCI_NAMESPACE_NAME }}
 
     steps:
       # Checkout source code
@@ -31,50 +31,7 @@ jobs:
         run: |
           echo "${OCI_AUTH_TOKEN}" | docker login ${OCI_CLI_REGION}.ocir.io -u "${OCI_CLI_TENANCY}/${OCI_CLI_USER}" --password-stdin
 
-
-      # Cache Docker layers to speed up builds
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      # Build Docker image (uses cache)
-      - name: Build Docker image
+      - name: 'Build and Push Docker Image'
         run: |
-          docker build \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
-            -t ${OCI_REGION}.ocir.io/${OCI_NAMESPACE}/intelitech-front:${{ github.sha }} .
-
-  push-image:
-    needs: test-and-build
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'dev' && 'development' || 'production' }}
-    defaults:
-      run:
-        shell: bash
-    env: 
-      OCI_CLI_USER: ${{ secrets.OCI_USERNAME }}
-      OCI_CLI_TENANCY: ${{ secrets.OCI_NAMESPACE }}
-      OCI_CLI_REGION: ${{ secrets.OCI_REGION_KEY }}
-      OCI_CLI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT}}
-      OCI_AUTH_TOKEN: ${{secrets.OCI_AUTH_TOKEN}}
-      OCI_NAMESPACE: ${{ secrets.OCI_NAMESPACE }}
-
-
-    steps:
-      # Checkout again 
-      - name: 'Checkout'
-        uses: actions/checkout@v6
-
-      - name: Log into OCIR
-        run: |
-          echo "${OCI_AUTH_TOKEN}" | docker login ${OCI_CLI_REGION}.ocir.io -u "${OCI_CLI_TENANCY}/${OCI_CLI_USER}" --password-stdin
-
-      # Push the image built in previous job
-      - name: Push Docker image
-        run: |
-          docker push ${{ secrets.OCI_REGION_KEY }}.ocir.io/${{ secrets.OCI_NAMESPACE }}/intelitech-front:${{ github.sha }}
+          docker build -t ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }} .
+          docker push ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }}
