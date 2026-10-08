@@ -3,7 +3,6 @@ on:
     workflow_dispatch:
     push:
         - dev
-    pull_request:
         - main
 
 jobs:
