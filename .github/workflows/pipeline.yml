@@ -21,6 +21,7 @@ jobs:
       OCI_CLI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT}}
       OCI_AUTH_TOKEN: ${{secrets.OCI_AUTH_TOKEN}}
       OCI_NAMESPACE_NAME: ${{ secrets.OCI_NAMESPACE_NAME }}
+      VM_PUBLIC_IP: ${{ vars.VM_PUBLIC_IP }}
 
     steps:
       # Checkout source code
@@ -35,3 +36,18 @@ jobs:
         run: |
           docker build -t ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }} .
           docker push ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }}
+      - name: SSH into OCI VM
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}   # sua chave privada
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key opc@$VM_PUBLIC_IP <<'EOF'
+            # Comandos a serem rodados dentro da VM
+            docker pull ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }}
+            docker stop intelitech-front || true
+            docker rm intelitech-front || true
+            docker run -d --name intelitech-front -p 80:80 ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }}
+          EOF
+          # Remove a chave privada do runner
+          rm -f private_key
