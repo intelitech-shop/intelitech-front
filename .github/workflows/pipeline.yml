@@ -18,16 +18,7 @@ jobs:
       # Checkout source code
       - name: 'Checkout'
         uses: actions/checkout@v6
-
-      # Get or create OCIR repository
-      - name: Get or create an OCIR Repository
-        uses: oracle-actions/get-ocir-repository@v1.3.0
-        id: get-ocir-repository
-        with:
-          name: oraclelinux
-          compartment: ${{ secrets.OCI_COMPARTMENT_OCID }}
-          region: ${{ secrets.OCI_REGION_KEY }}
-
+        
       # Log in to OCIR
       - name: 'Log in to OCIR'
         uses: oracle-actions/login-ocir@v1.3.0
