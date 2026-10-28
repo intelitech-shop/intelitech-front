@@ -1,5 +1,14 @@
 name: Pipeline
 
+# Deploy local via self-hosted runner rodando na maquina do professor.
+#
+#   push em `dev`  -> ambiente development -> container na porta 3501 -> dev.intelitech.shop
+#   push em `main` -> ambiente production  -> container na porta 3500 -> prod.intelitech.shop
+#
+# Nao ha mais build/push para registry em nuvem nem SSH para VM: o proprio
+# runner constroi a imagem e sobe o container com docker compose, e o
+# cloudflared (repo intelitech-tf) expoe a porta publicamente.
+
 on:
   workflow_dispatch:
   push:
@@ -8,52 +17,39 @@ on:
       - dev
 
 jobs:
-  test-and-build:
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'dev' && 'development' || 'production' }}
+  deploy:
+    runs-on: self-hosted
+    # Mantem o nome do environment para quem quiser configurar
+    # regras/approvals no GitHub, mas nao e mais obrigatorio.
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
     defaults:
       run:
         shell: bash
-    env: 
-      OCI_CLI_USER: ${{ secrets.OCI_USERNAME }}
-      OCI_CLI_TENANCY: ${{ secrets.OCI_NAMESPACE }}
-      OCI_CLI_REGION: ${{ secrets.OCI_REGION_KEY }}
-      OCI_CLI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT}}
-      OCI_AUTH_TOKEN: ${{secrets.OCI_AUTH_TOKEN}}
-      OCI_NAMESPACE_NAME: ${{ secrets.OCI_NAMESPACE_NAME }}
-      VM_PUBLIC_IP: ${{ vars.VM_PUBLIC_IP }}
 
     steps:
-      # Checkout source code
-      - name: 'Checkout'
-        uses: actions/checkout@v6
-        
-      - name: Log into OCIR
-        run: |
-          echo "${OCI_AUTH_TOKEN}" | docker login ${OCI_CLI_REGION}.ocir.io -u "${OCI_CLI_TENANCY}/${OCI_CLI_USER}" --password-stdin
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: 'Build and Push Docker Image'
+      - name: Definir ambiente alvo
+        id: env
         run: |
-          docker build -t ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }} .
-          docker push ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }}
-      - name: SSH into OCI VM
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}   # sua chave privada
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "service=intelitech-front-prod" >> "$GITHUB_OUTPUT"
+            echo "url=https://prod.intelitech.shop" >> "$GITHUB_OUTPUT"
+          else
+            echo "service=intelitech-front-dev" >> "$GITHUB_OUTPUT"
+            echo "url=https://dev.intelitech.shop" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build + subir container (${{ steps.env.outputs.service }})
         run: |
-          echo "$SSH_PRIVATE_KEY" > private_key
-          chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key opc@$VM_PUBLIC_IP <<'EOF'
-            # Ensure Docker is installed and running
-            if ! command -v docker >/dev/null 2>&1; then
-              sudo dnf install -y docker
-              sudo systemctl enable --now docker
-              sudo usermod -aG docker $(whoami)
-              newgrp docker
-            fi
-            docker pull ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }}
-            docker stop intelitech-front || true
-            docker rm intelitech-front || true
-            docker run -d --name intelitech-front -p 80:80 ${OCI_CLI_REGION}.ocir.io/${OCI_CLI_TENANCY}/${OCI_NAMESPACE_NAME}/intelitech-front:${{ github.sha }}
-          EOF
-          # Remove a chave privada do runner
-          rm -f private_key
+          docker compose up -d --build --no-deps "${{ steps.env.outputs.service }}"
+
+      - name: Limpar imagens antigas
+        run: docker image prune -f
+
+      - name: Resumo
+        run: |
+          echo "Deploy de ${{ github.ref_name }} concluido."
+          echo "Servico: ${{ steps.env.outputs.service }}"
+          echo "URL publica: ${{ steps.env.outputs.url }}"

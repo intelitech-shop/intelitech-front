@@ -1,0 +1,36 @@
+# Runtime local do intelitech-front (classe de Git).
+#
+# Dois ambientes rodam lado a lado nesta mesma maquina:
+#   - dev  -> publica em localhost:3501  (tunnel dev.intelitech.shop)
+#   - prod -> publica em localhost:3500  (tunnel prod.intelitech.shop)
+#
+# As portas 3501/3500 batem com o ingress configurado no repo intelitech-tf
+# (dev/cloudflare-config.tf e prod/cloudflare-config.tf).
+#
+# A pipeline (self-hosted runner) sobe apenas o servico do ambiente que
+# recebeu o push, por exemplo:
+#   docker compose up -d --build intelitech-front-dev
+#
+# Subir os dois manualmente:
+#   docker compose up -d --build
+
+services:
+  intelitech-front-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: intelitech-front:dev
+    container_name: intelitech-front-dev
+    restart: unless-stopped
+    ports:
+      - "3501:80"
+
+  intelitech-front-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: intelitech-front:prod
+    container_name: intelitech-front-prod
+    restart: unless-stopped
+    ports:
+      - "3500:80"
