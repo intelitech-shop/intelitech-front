@@ -1,65 +1,55 @@
 name: Pipeline
 
+# Deploy local via self-hosted runner rodando na maquina do professor.
+#
+#   push em `dev`  -> ambiente development -> container na porta 3501 -> dev.intelitech.shop
+#   push em `main` -> ambiente production  -> container na porta 3500 -> prod.intelitech.shop
+#
+# Nao ha mais build/push para registry em nuvem nem SSH para VM: o proprio
+# runner constroi a imagem e sobe o container com docker compose, e o
+# cloudflared (repo intelitech-tf) expoe a porta publicamente.
+
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+      - dev
 
 jobs:
-  test-and-build:
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'dev' && 'development' || 'production' }}
+  deploy:
+    runs-on: self-hosted
+    # Mantem o nome do environment para quem quiser configurar
+    # regras/approvals no GitHub, mas nao e mais obrigatorio.
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
     defaults:
       run:
         shell: bash
 
     steps:
-      # Checkout source code
-      - name: 'Checkout'
-        uses: actions/checkout@v6
-        
-      # Log in to OCIR
-      - name: 'Log in to OCIR'
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Definir ambiente alvo
+        id: env
         run: |
-          echo "${{ secrets.OCI_AUTH_TOKEN }}" | docker login ${{ secrets.OCI_REGION_KEY }}.ocir.io -u "${{ secrets.OCI_NAMESPACE }}/${{ secrets.OCI_USERNAME }}" --password-stdin
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "service=intelitech-front-prod" >> "$GITHUB_OUTPUT"
+            echo "url=https://prod.intelitech.shop" >> "$GITHUB_OUTPUT"
+          else
+            echo "service=intelitech-front-dev" >> "$GITHUB_OUTPUT"
+            echo "url=https://dev.intelitech.shop" >> "$GITHUB_OUTPUT"
+          fi
 
-      # Cache Docker layers to speed up builds
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      # Build Docker image (uses cache)
-      - name: Build Docker image
+      - name: Build + subir container (${{ steps.env.outputs.service }})
         run: |
-          docker build \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
-            -t ${{ secrets.OCI_REGION_KEY }}.ocir.io/${{ secrets.OCI_NAMESPACE }}/intelitech-front:${{ github.sha }} .
+          docker compose up -d --build --no-deps "${{ steps.env.outputs.service }}"
 
-  push-image:
-    needs: test-and-build
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'dev' && 'development' || 'production' }}
-    defaults:
-      run:
-        shell: bash
+      - name: Limpar imagens antigas
+        run: docker image prune -f
 
-    steps:
-      # Checkout again 
-      - name: 'Checkout'
-        uses: actions/checkout@v6
-
-      # Log in to OCIR (required to push)
-      - name: 'Log in to OCIR'
+      - name: Resumo
         run: |
-          echo "${{ secrets.OCI_AUTH_TOKEN }}" | docker login ${{ secrets.OCI_REGION_KEY }}.ocir.io -u "${{ secrets.OCI_NAMESPACE }}/${{ secrets.OCI_USERNAME }}" --password-stdin
-
-      # Push the image built in previous job
-      - name: Push Docker image
-        run: |
-          docker push ${{ secrets.OCI_REGION_KEY }}.ocir.io/${{ secrets.OCI_NAMESPACE }}/intelitech-front:${{ github.sha }}
+          echo "Deploy de ${{ github.ref_name }} concluido."
+          echo "Servico: ${{ steps.env.outputs.service }}"
+          echo "URL publica: ${{ steps.env.outputs.url }}"
