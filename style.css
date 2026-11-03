@@ -124,6 +124,7 @@ section {
   *::before,
   *::after {
     animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.001s !important;
   }
 }
@@ -615,7 +616,9 @@ section[id] {
   background: var(--surface);
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
-  transition: transform var(--transition), box-shadow var(--transition);
+  transition: box-shadow var(--transition);
+  backface-visibility: hidden;
+  will-change: translate;
 }
 
 .float-card img {
@@ -682,10 +685,10 @@ section[id] {
 @keyframes float-y {
   0%,
   100% {
-    transform: translateY(0);
+    translate: 0 0;
   }
   50% {
-    transform: translateY(-16px);
+    translate: 0 -16px;
   }
 }
 
