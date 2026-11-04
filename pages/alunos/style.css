@@ -1,0 +1,81 @@
+/* ---------- hero da página da turma ---------- */
+.alunos-hero {
+  padding-top: calc(var(--header-h) + 84px);
+  padding-bottom: 48px;
+  background:
+    radial-gradient(760px 320px at 88% 0%, rgba(212, 175, 55, 0.15), transparent 62%),
+    var(--bg-soft);
+  text-align: center;
+}
+
+.alunos-hero .eyebrow {
+  justify-content: center;
+}
+
+.alunos-hero h1 {
+  max-width: 18ch;
+  margin-inline: auto;
+  font-size: clamp(2rem, 4.8vw, 3.3rem);
+  font-weight: 800;
+}
+
+.alunos-hero p {
+  margin: 18px auto 0;
+  max-width: 56ch;
+  color: var(--text-soft);
+  font-size: 1.05rem;
+}
+
+/* ---------- grid de nomes (máximo 3 por linha) ---------- */
+.alunos {
+  padding-block: clamp(48px, 7vw, 90px);
+}
+
+.alunos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(14px, 2vw, 22px);
+  margin-top: clamp(28px, 4vw, 44px);
+}
+
+.alunos-grid > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 92px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-align: center;
+  word-break: break-word;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.alunos-grid > div:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+.alunos-grid > div::before {
+  content: '✦';
+  margin-right: 10px;
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .alunos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .alunos-grid {
+    grid-template-columns: 1fr;
+  }
+}
